@@ -1,0 +1,4 @@
+bucket: student-reports-prod
+region: us-east-1
+presign_ttl_seconds: 300
+grades_service_url: https://grades.internal.example/status

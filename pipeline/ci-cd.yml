@@ -1,0 +1,114 @@
+# CI/CD pipeline for the Student Reports service.
+# Modeled on GitHub Actions. It lives outside .github/ so it never actually runs.
+
+name: reports-ci-cd
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  IMAGE: 123456789012.dkr.ecr.us-east-1.amazonaws.com/reports
+  DEPLOY_ROLE: arn:aws:iam::123456789012:role/reports-ci-deploy
+
+jobs:
+  test:
+    runs-on: [self-hosted, linux, build]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Lint and unit tests
+        working-directory: app
+        run: |
+          pip install -r requirements-dev.txt
+          ruff check src tests
+          PYTHONPATH=src pytest -q
+
+  build:
+    needs: test
+    runs-on: [self-hosted, linux, build]
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: meta
+        run: echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.DEPLOY_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: 123456789012.dkr.ecr.us-east-1.amazonaws.com
+          username: ci-reports
+          password: ${{ vars.REGISTRY_PASSWORD }}
+      - name: Build and push image
+        run: |
+          docker build -t "$IMAGE:${{ steps.meta.outputs.tag }}" app/
+          docker push "$IMAGE:${{ steps.meta.outputs.tag }}"
+
+  security-scan:
+    needs: build
+    runs-on: [self-hosted, linux, build]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Image vulnerability scan
+        run: trivy image --severity HIGH,CRITICAL --exit-code 0 "$IMAGE:${{ needs.build.outputs.tag }}"
+      - name: Infrastructure policy scan
+        run: checkov -d infra/terraform --soft-fail
+
+  deploy-staging:
+    needs: build
+    runs-on: [self-hosted, linux, deploy]
+    environment: staging
+    env:
+      DATABASE_URL: postgresql://reports_app:Rp0rts-Stg-2026@reports-staging.internal:5432/reports
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.DEPLOY_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Deploy to staging
+        run: |
+          aws eks update-kubeconfig --name reports-staging
+          kubectl -n reports create secret generic reports-runtime \
+            --from-literal=DATABASE_URL="$DATABASE_URL" --dry-run=client -o yaml | kubectl apply -f -
+          kubectl -n reports set image deployment/reports reports="$IMAGE:${{ needs.build.outputs.tag }}"
+
+  deploy-production:
+    needs: [build, deploy-staging]
+    if: github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, linux, deploy]
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.DEPLOY_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Deploy to production
+        run: |
+          aws eks update-kubeconfig --name reports-prod
+          kubectl -n reports apply -f k8s/
+          kubectl -n reports set image deployment/reports reports="$IMAGE:${{ needs.build.outputs.tag }}"
+      - name: Rollback
+        if: failure()
+        run: echo "Deployment failed. Follow the rollback runbook in Confluence."
+      - name: Notify
+        if: always()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          channel-id: C0REPORTS
+          slack-message: "reports deploy ${{ job.status }}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

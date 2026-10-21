@@ -1,0 +1,17 @@
+# Fires on every push to a team branch. It does nothing privileged:
+# the trusted "score" workflow on main picks it up and does the scoring.
+name: submit
+
+on:
+  push:
+    branches: ["team/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record submission
+        run: echo "Submission received from ${GITHUB_REF_NAME} at ${GITHUB_SHA::7}"

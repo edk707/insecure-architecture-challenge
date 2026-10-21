@@ -1,0 +1,74 @@
+# Trusted scorer. workflow_run always uses this file from the default branch,
+# so editing it (or the scoring code) on a team branch has no effect.
+# The team's files are checked out as data only and never executed.
+name: score
+
+on:
+  workflow_run:
+    workflows: ["submit"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: leaderboard
+  cancel-in-progress: false
+
+jobs:
+  score:
+    if: startsWith(github.event.workflow_run.head_branch, 'team/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the trusted scorer (main)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: trusted
+
+      - name: Check out the team submission
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          path: submission
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install scorer dependency
+        run: pip install pyyaml==6.0.2
+
+      - name: Score
+        env:
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          TEAM="${BRANCH#team/}"
+          echo "TEAM=$(echo "$TEAM" | tr 'A-Z' 'a-z' | sed 's/[^a-z0-9-]/-/g' | cut -c1-40)" >> "$GITHUB_ENV"
+          python trusted/.github/scoring/score.py \
+            --repo submission --team "$TEAM" --sha "$SHA" \
+            --out "$RUNNER_TEMP/result.json" --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish to the leaderboard
+        working-directory: trusted
+        run: |
+          cp .github/scoring/render.py "$RUNNER_TEMP/render.py"
+          git config user.name  "challenge-scorer"
+          git config user.email "challenge-scorer@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin leaderboard >/dev/null; then
+            git fetch --depth 1 origin leaderboard
+            git switch leaderboard
+          else
+            git switch --orphan leaderboard
+            git rm -rf --quiet . || true
+            git clean -fdq
+          fi
+          mkdir -p results
+          cp "$RUNNER_TEMP/result.json" "results/${TEAM}.json"
+          python "$RUNNER_TEMP/render.py" results index.html
+          touch .nojekyll
+          git add results index.html .nojekyll
+          git commit -m "score: ${TEAM}" || exit 0
+          git push origin leaderboard
