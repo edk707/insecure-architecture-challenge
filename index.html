@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="30">
+<title>Insecure Architecture · Leaderboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E7EDF4;--card:#F7F5F0;--ink:#1E2A3A;--soft:#4A5568;--accent:#3B5BA9;--mint:#A9D6C2;--line:#DEDBD2;--warn:#A8432A}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',Arial,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:48px 16px}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+h1{font-family:'Space Grotesk',Arial,sans-serif;font-size:clamp(30px,5vw,48px);margin:0 0 8px;letter-spacing:-1px}
+p.sub{color:var(--soft);margin:0 0 32px}
+.card{background:var(--card);border-radius:20px;padding:8px 8px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:720px}
+th{text-align:left;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--soft);padding:14px 12px;border-bottom:2px solid var(--line)}
+td{padding:14px 12px;border-bottom:1px solid var(--line);font-size:16px}
+tr:last-child td{border-bottom:none}
+.rank{font-family:'Space Grotesk',Arial,sans-serif;font-weight:600;font-size:20px;width:48px}
+tr:nth-child(1) .rank{color:var(--accent)}
+.team{font-weight:600}
+.num,.when{color:var(--soft);font-variant-numeric:tabular-nums}
+.score{font-family:'Space Grotesk',Arial,sans-serif;font-weight:600;font-size:22px;text-align:right}
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;background:#E2E0D8}
+.dot.on{background:#3E8A6E}
+.warn{font-size:12px;font-weight:600;color:var(--warn);margin-left:8px}
+.empty{text-align:center;color:var(--soft);padding:40px}
+footer{color:var(--soft);font-size:13px;margin-top:20px}
+</style></head>
+<body><main>
+<p class="eyebrow">Team Challenge · Live</p>
+<h1>The Insecure Architecture</h1>
+<p class="sub">Eight planted flaws. Green dots are fixes the scorer has confirmed. Refreshes every 30 seconds.</p>
+<div class="card"><table>
+<thead><tr><th>#</th><th>Team</th><th>Checks</th><th>Fixed</th><th>Classified</th><th>Verdict</th><th style="text-align:right">Score</th><th>Last push</th></tr></thead>
+<tbody>
+<tr><td class='rank'>1</td><td class='team'>smoke-test </td><td class='dots'><span class="dot " title="Not yet"></span><span class="dot " title="Not yet"></span><span class="dot " title="Not yet"></span><span class="dot " title="Not yet"></span><span class="dot " title="Not yet"></span><span class="dot " title="Not yet"></span><span class="dot " title="Not yet"></span><span class="dot " title="Not yet"></span></td><td class='num'>0/8</td><td class='num'>0/8</td><td class='num'>0/10</td><td class='score'>0</td><td class='when'>05:03 UTC</td></tr>
+</tbody></table></div>
+<footer>Maximum 130 points: 80 for fixes, 40 for classifications, 10 for the verdict.</footer>
+</main></body></html>
