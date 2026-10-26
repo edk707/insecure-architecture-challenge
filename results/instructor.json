@@ -2,12 +2,12 @@
   "team": "instructor",
   "score": 40,
   "max": 130,
-  "fixed": 4,
+  "fixed": 6,
   "checks": {
     "1": true,
-    "2": false,
+    "2": true,
     "3": true,
-    "4": false,
+    "4": true,
     "5": true,
     "6": false,
     "7": true,
@@ -15,7 +15,7 @@
   },
   "classified": 0,
   "verdict_points": 0,
-  "build_ok": true,
-  "sha": "b7427f9",
-  "scored_at": "2026-10-26T19:47:42Z"
+  "build_ok": false,
+  "sha": "009e285",
+  "scored_at": "2026-10-26T20:07:21Z"
 }
