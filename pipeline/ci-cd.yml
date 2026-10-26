@@ -103,7 +103,9 @@ jobs:
           kubectl -n reports set image deployment/reports reports="$IMAGE:${{ needs.build.outputs.tag }}"
       - name: Rollback
         if: failure()
-        run: echo "kubectl -n reports rollout undo deployment/reports"
+        run: |
+          aws eks update-kubeconfig --name reports-prod
+          kubectl -n reports rollout undo deployment/reports
       - name: Notify
         if: always()
         uses: slackapi/slack-github-action@v1.26.0
