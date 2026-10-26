@@ -5,11 +5,11 @@ resource "aws_cloudtrail" "platform" {
   enable_log_file_validation = true
 
   # Paused during the cost review (FIN-88). Re-enable after Q3.
-  enable_logging = false
+  enable_logging = true
 }
 
 resource "aws_guardduty_detector" "main" {
-  enable = false
+  enable = true
 }
 
 resource "aws_cloudwatch_metric_alarm" "db_cpu_high" {

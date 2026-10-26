@@ -26,16 +26,6 @@
       "Resource": "arn:aws:eks:us-east-1:123456789012:cluster/reports-prod"
     },
     {
-      "Sid": "PlatformMaintenance",
-      "Effect": "Allow",
-      "NotAction": [
-        "iam:CreateUser",
-        "iam:CreateAccessKey",
-        "organizations:*"
-      ],
-      "Resource": "*"
-    },
-    {
       "Sid": "NeverTouchAuditTrail",
       "Effect": "Deny",
       "Action": [

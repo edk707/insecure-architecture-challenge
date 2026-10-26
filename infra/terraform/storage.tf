@@ -19,9 +19,11 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "reports" {
 }
 
 resource "aws_s3_bucket_public_access_block" "reports" {
-  bucket             = aws_s3_bucket.reports.id
-  block_public_acls  = true
-  ignore_public_acls = true
+  bucket                  = aws_s3_bucket.reports.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 # Report PDFs are linked from the parent portal. Only allow encrypted transport.

@@ -7,9 +7,9 @@ metadata:
     app: reports
 spec:
   replicas: 3
-  revisionHistoryLimit: 0
+  revisionHistoryLimit: 5
   strategy:
-    type: Recreate
+    type: RollingUpdate
   selector:
     matchLabels:
       app: reports

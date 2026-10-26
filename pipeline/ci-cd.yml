@@ -50,7 +50,7 @@ jobs:
         with:
           registry: 123456789012.dkr.ecr.us-east-1.amazonaws.com
           username: ci-reports
-          password: ${{ vars.REGISTRY_PASSWORD }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Build and push image
         run: |
           docker build -t "$IMAGE:${{ steps.meta.outputs.tag }}" app/
@@ -62,16 +62,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Image vulnerability scan
-        run: trivy image --severity HIGH,CRITICAL --exit-code 0 "$IMAGE:${{ needs.build.outputs.tag }}"
+        run: trivy image --severity HIGH,CRITICAL --exit-code 1 "$IMAGE:${{ needs.build.outputs.tag }}"
       - name: Infrastructure policy scan
-        run: checkov -d infra/terraform --soft-fail
+        run: checkov -d infra/terraform
 
   deploy-staging:
     needs: build
     runs-on: [self-hosted, linux, deploy]
     environment: staging
     env:
-      DATABASE_URL: postgresql://reports_app:Rp0rts-Stg-2026@reports-staging.internal:5432/reports
+      DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
@@ -86,7 +86,7 @@ jobs:
           kubectl -n reports set image deployment/reports reports="$IMAGE:${{ needs.build.outputs.tag }}"
 
   deploy-production:
-    needs: [build, deploy-staging]
+    needs: [build, security-scan, deploy-staging]
     if: github.ref == 'refs/heads/main'
     runs-on: [self-hosted, linux, deploy]
     environment: production

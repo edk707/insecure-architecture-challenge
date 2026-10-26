@@ -20,12 +20,4 @@ resource "aws_security_group" "build_agents" {
     protocol    = "tcp"
     cidr_blocks = [var.package_proxy_cidr]
   }
-
-  egress {
-    description = "Git over TCP for legacy submodules"
-    from_port   = 0
-    to_port     = 65535
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 }
