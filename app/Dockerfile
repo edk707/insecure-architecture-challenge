@@ -6,7 +6,7 @@ COPY requirements.txt .
 RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
 # PDF fonts used by reports-pdf-render
-ADD https://assets.report-tools.example/fonts/report-fonts-2.1.tar.gz /build/fonts.tar.gz
+ADD https://assets.report-tools.example/fonts/report-fonts-2.1.tar.gz --checksum=sha256 /build/fonts.tar.gz
 RUN mkdir -p /fonts && tar -xzf /build/fonts.tar.gz -C /fonts
 
 # ---------- runtime stage ----------

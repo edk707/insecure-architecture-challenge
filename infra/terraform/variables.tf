@@ -21,7 +21,7 @@ variable "db_instance_class" {
 variable "db_publicly_accessible" {
   type        = bool
   description = "Lets the reporting team connect BI tools during the pilot"
-  default     = true
+  default     = false
 }
 
 variable "package_proxy_cidr" {
