@@ -1,0 +1,21 @@
+{
+  "team": "sujitha-1",
+  "score": 0,
+  "max": 130,
+  "fixed": 0,
+  "checks": {
+    "1": false,
+    "2": false,
+    "3": false,
+    "4": false,
+    "5": false,
+    "6": false,
+    "7": false,
+    "8": false
+  },
+  "classified": 0,
+  "verdict_points": 0,
+  "build_ok": true,
+  "sha": "af62a52",
+  "scored_at": "2026-10-27T00:13:55Z"
+}
